@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = "us-east-1"           // change if needed
-        ECR_REPO = "flask-user-manager"     // your ECR repo name
-        IMAGE_TAG = "latest"
-        SONARQUBE = "SonarQubeServer"       // same as in Jenkins config
-        DOCKER_HUB_CRED = "dockerhub"       // credential ID in Jenkins
-        AWS_CRED = "aws"                    // credential ID in Jenkins
+        AWS_REGION      = "us-east-1"            // change if needed
+        ECR_REPO        = "flask-user-manager"   // your ECR repo name
+        IMAGE_TAG       = "latest"
+        SONARQUBE       = "my-sonarqube"         // same as in Jenkins config
+        DOCKER_HUB_CRED = "dockerhub"            // credential ID in Jenkins
+        AWS_CRED        = "aws"                  // credential ID in Jenkins
     }
 
     stages {
@@ -29,10 +29,10 @@ pipeline {
         stage('Trivy Scan') {
             steps {
                 script {
-                    // If Trivy is not installed globally, use docker
+                    // If Trivy is not installed globally, use Docker
                     sh '''
                     docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                    aquasec/trivy image $ECR_REPO:$IMAGE_TAG > trivy-scan.txt || true
+                        aquasec/trivy image $ECR_REPO:$IMAGE_TAG > trivy-scan.txt || true
                     cat trivy-scan.txt
                     '''
                 }
@@ -45,7 +45,7 @@ pipeline {
                 scannerHome = tool 'SonarScanner'          // Name in Global Tool Config
             }
             steps {
-                withSonarQubeEnv('my-sonarqube') {         // Name from Configure System
+                withSonarQubeEnv("${SONARQUBE}") {         // Matches name in Jenkins → Configure System
                     sh '''
                     ${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=flask-user-manager \
@@ -56,8 +56,6 @@ pipeline {
                 }
             }
         }
-
-
 
         stage('Push to ECR') {
             steps {
@@ -73,20 +71,22 @@ pipeline {
                 }
             }
         }
+
         stage('Deploy to EKS') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws']]) {
-            script {
-                sh '''
-                aws configure set region ${AWS_REGION}
-                aws eks update-kubeconfig --region ${AWS_REGION} --name flask-user-manager
-                kubectl apply -f k8s/deployment.yaml
-                kubectl apply -f k8s/service.yaml
-                '''
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws']]) {
+                    script {
+                        sh '''
+                        aws configure set region ${AWS_REGION}
+                        aws eks update-kubeconfig --region ${AWS_REGION} --name flask-user-manager
+                        kubectl apply -f k8s/deployment.yaml
+                        kubectl apply -f k8s/service.yaml
+                        '''
+                    }
+                }
             }
         }
     }
-}
 
     post {
         always {
