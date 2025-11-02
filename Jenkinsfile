@@ -49,8 +49,8 @@ pipeline {
                     $scannerHome/bin/sonar-scanner \
                       -Dsonar.projectKey=flask-user-manager \
                       -Dsonar.sources=. \
-                      -Dsonar.host.url=http://localhost:9000 \
-                      -Dsonar.login=<your-sonarqube-token>
+                      -Dsonar.host.url=http://54.85.14.197:9000 \
+                      -Dsonar.login=${SONAR_TOKEN}
                     '''
                 }
             }
