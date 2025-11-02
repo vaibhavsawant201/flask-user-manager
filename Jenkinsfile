@@ -39,23 +39,24 @@ pipeline {
             }
         }
 
-          stage('SonarQube Analysis') {
-    environment {
-        SONAR_TOKEN = credentials('sonar-token')   // <-- 'sonar-token' is the credential ID
-        scannerHome = tool 'SonarScanner'          // <-- name from Manage Jenkins → Global Tool Configuration
-    }
-    steps {
-        withSonarQubeEnv('SonarQubeServer') {      // <-- name from Manage Jenkins → Configure System
-            sh '''
-            ${scannerHome}/bin/sonar-scanner \
-                -Dsonar.projectKey=flask-user-manager \
-                -Dsonar.sources=. \
-                -Dsonar.host.url=http://54.85.14.197:9000 \
-                -Dsonar.login=${SONAR_TOKEN}
-            '''
+        stage('SonarQube Analysis') {
+            environment {
+                SONAR_TOKEN = credentials('sonar-token')   // Jenkins credential ID
+                scannerHome = tool 'SonarScanner'          // Name in Global Tool Config
+            }
+            steps {
+                withSonarQubeEnv('my-sonarqube') {         // Name from Configure System
+                    sh '''
+                    ${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=flask-user-manager \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://54.85.14.197:9000 \
+                        -Dsonar.login=${SONAR_TOKEN}
+                    '''
+                }
+            }
         }
-    }
-}
+
 
 
         stage('Push to ECR') {
