@@ -61,9 +61,9 @@ pipeline {
                 withAWS(credentials: 'aws', region: "${AWS_REGION}") {
                     script {
                         sh '''
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.${AWS_REGION}.amazonaws.com
-                        docker tag $ECR_REPO:$IMAGE_TAG <your-account-id>.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:$IMAGE_TAG
-                        docker push <your-account-id>.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 547091556711.dkr.ecr.${AWS_REGION}.amazonaws.com
+                        docker tag $ECR_REPO:$IMAGE_TAG 547091556711.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+                        docker push 547091556711.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:$IMAGE_TAG
                         '''
                     }
                 }
