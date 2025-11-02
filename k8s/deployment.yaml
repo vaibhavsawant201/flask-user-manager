@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-user-manager
+  namespace: default
+  labels:
+    app: flask-user-manager
+spec:
+  replicas: 1   # Keep single replica because SQLite is not concurrency-safe
+  selector:
+    matchLabels:
+      app: flask-user-manager
+  template:
+    metadata:
+      labels:
+        app: flask-user-manager
+    spec:
+      containers:
+        - name: flask-user-manager
+          image: 547091556711.dkr.ecr.us-east-1.amazonaws.com/flask-user-manager:latest
+          ports:
+            - containerPort: 5000
+          #volumeMounts:
+           # - name: db-storage
+            #  mountPath: /app  # Folder containing user.db
+      #volumes:
+       # - name: db-storage
+        #  persistentVolumeClaim:
+         #   claimName: flask-db-pvc
