@@ -61,9 +61,10 @@ pipeline {
 
         stage('Push to ECR') {
             steps {
-                withAWS(credentials: 'aws', region: "${AWS_REGION}") {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws']]) {
                     script {
                         sh '''
+                        aws configure set region ${AWS_REGION}
                         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 547091556711.dkr.ecr.${AWS_REGION}.amazonaws.com
                         docker tag $ECR_REPO:$IMAGE_TAG 547091556711.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:$IMAGE_TAG
                         docker push 547091556711.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:$IMAGE_TAG
@@ -72,21 +73,20 @@ pipeline {
                 }
             }
         }
-
         stage('Deploy to EKS') {
-            steps {
-                withAWS(credentials: 'aws', region: "${AWS_REGION}") {
-                    script {
-                        sh '''
-                        aws eks update-kubeconfig --region ${AWS_REGION} --name flask-user-manager
-                        kubectl apply -f k8s/deployment.yaml
-                        kubectl apply -f k8s/service.yaml
-                        '''
-                    }
-                }
+    steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws']]) {
+            script {
+                sh '''
+                aws configure set region ${AWS_REGION}
+                aws eks update-kubeconfig --region ${AWS_REGION} --name flask-user-manager
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
+                '''
             }
         }
     }
+}
 
     post {
         always {
